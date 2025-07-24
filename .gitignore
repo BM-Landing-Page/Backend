@@ -1,0 +1,46 @@
+# Node modules and dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Compiled files
+*.class
+*.pyc
+*.o
+*.so
+
+# Build and dist folders
+dist/
+build/
+
+# IDE and editor folders
+.vscode/
+.idea/
+
+# Environment files
+.env
+
+# Coverage reports
+coverage/
+
+# Temporary files
+*.swp
+*.bak
+*.tmp
+
+# TypeScript
+*.tsbuildinfo
+
+# Python virtual environments
+venv/
+__pycache__/
+
+# Backup files
+*.orig
