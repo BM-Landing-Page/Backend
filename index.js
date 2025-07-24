@@ -7,6 +7,7 @@ import blogRoutes from './routes/blogRoutes.js';
 import teamRoutes from './routes/teamRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
 import calendarRoutes from './routes/calendarRoutes.js';
+import careerRoutes from './routes/careerRoutes.js'; 
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use('/blog', blogRoutes);
 app.use('/team', teamRoutes);
 app.use('/applications', applicationRoutes);
 app.use('/calendar', calendarRoutes);
+app.use('/career', careerRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
