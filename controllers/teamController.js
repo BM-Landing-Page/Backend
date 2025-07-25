@@ -14,6 +14,7 @@ export async function getAllMembers(req, res) {
           created_at
         )
       `)
+      .order('priority', { ascending: true })
       .order('name');
 
     if (error) throw error;
@@ -65,7 +66,9 @@ export async function createMember(req, res) {
       education_background: req.body.education_background,
       joined_month: parseInt(req.body.joined_month) || 1,
       joined_year: parseInt(req.body.joined_year) || new Date().getFullYear(),
-      linkedin_url: req.body.linkedin_url
+      linkedin_url: req.body.linkedin_url,
+      department: req.body.department,
+      priority: parseInt(req.body.priority) || 0
     };
 
     // Handle image upload
@@ -135,7 +138,9 @@ export async function updateMember(req, res) {
       education_background: req.body.education_background,
       joined_month: parseInt(req.body.joined_month) || 1,
       joined_year: parseInt(req.body.joined_year) || new Date().getFullYear(),
-      linkedin_url: req.body.linkedin_url
+      linkedin_url: req.body.linkedin_url,
+      department: req.body.department,
+      priority: parseInt(req.body.priority) || 0
     };
 
     // Handle image update
