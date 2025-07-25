@@ -15,9 +15,9 @@ export async function getAllData(req, res) {
 // Protected – Create entry
 export async function createData(req, res) {
   try {
-    const { description, year } = req.body;
-    if (!description || !year || !req.file) {
-      return res.status(400).json({ error: 'Description, year and image are required' });
+    const { description, year, category } = req.body;
+    if (!description || !year || !category || !req.file) {
+      return res.status(400).json({ error: 'Description, year, category, and image are required' });
     }
 
     // Upload image to Supabase storage
@@ -26,7 +26,7 @@ export async function createData(req, res) {
     // Create gallery entry with image URL
     const { data, error } = await supabase
       .from('gallery')
-      .insert([{ description, year, image_url }]);
+      .insert([{ description, year, category, image_url }]);
 
     if (error) throw error;
     res.status(201).json({ message: 'Gallery item added', data });
@@ -38,11 +38,12 @@ export async function createData(req, res) {
 // Protected – Update entry
 export async function updateData(req, res) {
   const { id } = req.params;
-  const { description, year, image_url } = req.body;
+  const { description, year, category, image_url } = req.body;
 
   const updates = {};
   if (description !== undefined) updates.description = description;
   if (year !== undefined) updates.year = year;
+  if (category !== undefined) updates.category = category;
   if (image_url !== undefined) updates.image_url = image_url;
 
   const { data, error } = await supabase
