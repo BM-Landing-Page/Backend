@@ -66,7 +66,7 @@ export async function createMember(req, res) {
       education_background: req.body.education_background,
       joined_month: parseInt(req.body.joined_month) || 1,
       joined_year: parseInt(req.body.joined_year) || new Date().getFullYear(),
-      linkedin_url: req.body.linkedin_url,
+      linkedin_url: req.body.linkedin_url || null,
       department: req.body.department,
       priority: parseInt(req.body.priority) || 0
     };
