@@ -22,7 +22,7 @@ export async function sendFeedbackEmail(req, res) {
     // Send email with feedback details
     await transporter.sendMail({
       from: '"Parent Feedback" <career.applications.bmis@gmail.com>',
-      to: "gopalvalluintern@gmail.com", // Replace with your feedback email
+      to: "bmis@buddingminds.net", // Replace with your feedback email
       subject: `📝 New Parent Feedback - Grade ${grade}`,
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; background-color: #f8f9fa;">
