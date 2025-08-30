@@ -61,7 +61,7 @@ export async function createMember(req, res) {
     const memberData = {
       name: req.body.name,
       description: req.body.description,
-      role: req.body.role,
+      role: req.body.role || null,
       years_experience: parseInt(req.body.years_experience) || 0,
       education_background: req.body.education_background,
       joined_month: parseInt(req.body.joined_month) || 1,
