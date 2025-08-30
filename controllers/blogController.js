@@ -15,9 +15,9 @@ export async function getAllBlogs(req, res) {
 // Protected - Create blog
 export async function createBlog(req, res) {
   try {
-    const { title, content, author, feature } = req.body;
-    if (!title || !content || !author || !req.file) {
-      return res.status(400).json({ error: 'Title, content, author and thumbnail are required' });
+    const { title, content, author, feature, grade } = req.body;
+    if (!title || !content || !grade || !author || !req.file) {
+      return res.status(400).json({ error: 'Title, content, author, grade and thumbnail are required' });
     }
 
     // Upload thumbnail to Supabase storage
@@ -30,7 +30,8 @@ export async function createBlog(req, res) {
         content, 
         author, 
         thumbnail,
-        feature: feature || false
+        feature: feature || false,
+        grade
       }]);
 
     if (error) throw error;
