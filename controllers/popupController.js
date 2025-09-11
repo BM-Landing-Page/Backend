@@ -35,8 +35,8 @@ export async function createPopup(req, res) {
     // Delete existing record if it exists
     if (existingPopup) {
       // Delete old image if exists
-      if (existingPopup.image_url) {
-        await deleteImage(existingPopup.image_url);
+      if (existingPopup.image) {
+        await deleteImage(existingPopup.image);
       }
       
       // Delete the record
@@ -53,7 +53,7 @@ export async function createPopup(req, res) {
 
     // Handle image upload
     if (req.file) {
-      popupData.image_url = await uploadImage(req.file);
+      popupData.image = await uploadImage(req.file);
     }
 
     // Insert new record
@@ -95,10 +95,10 @@ export async function updatePopup(req, res) {
     // Handle image update
     if (req.file) {
       // Delete old image if exists
-      if (existingPopup.image_url) {
-        await deleteImage(existingPopup.image_url);
+      if (existingPopup.image) {
+        await deleteImage(existingPopup.image);
       }
-      updates.image_url = await uploadImage(req.file);
+      updates.image = await uploadImage(req.file);
     }
 
     // Update the record
@@ -139,8 +139,8 @@ export async function deletePopup(req, res) {
     if (error) throw error;
 
     // Delete image if exists
-    if (existingPopup.image_url) {
-      await deleteImage(existingPopup.image_url);
+    if (existingPopup.image) {
+      await deleteImage(existingPopup.image);
     }
 
     res.status(200).json({ message: 'Popup deleted successfully' });
