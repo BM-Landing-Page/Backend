@@ -34,24 +34,7 @@ export async function createScroll(req, res) {
   }
 }
 
-// Protected - Update scroll
-export async function updateScroll(req, res) {
-  try {
-    const { id } = req.params;
-    const updates = { ...req.body };
 
-    const { data, error } = await supabase
-      .from('scroller')
-      .update(updates)
-      .eq('id', id)
-      .select();
-
-    if (error) throw error;
-    res.status(201).json({ message: 'Scroll updated', data });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}
 
 // Protected - Update scroll
 export async function updateScroll(req, res) {
