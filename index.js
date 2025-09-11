@@ -10,6 +10,7 @@ import applicationRoutes from './routes/applicationRoutes.js';
 import calendarRoutes from './routes/calendarRoutes.js';
 import careerRoutes from './routes/careerRoutes.js'; 
 import popupRoutes from './routes/popupRoutes.js';
+import scrollRoutes from './routes/scrollRoutes.js';
 
 dotenv.config();
 
@@ -26,6 +27,8 @@ app.use('/applications', applicationRoutes);
 app.use('/calendar', calendarRoutes);
 app.use('/career', careerRoutes);
 app.use('/popup', popupRoutes);
+app.use('/scroll', scrollRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
