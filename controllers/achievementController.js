@@ -12,19 +12,18 @@ export async function getAll(req, res) {
   res.status(200).json(data);
 }
 
-// Protected - Create achievement
 export async function createAchievement(req, res) {
   try {
     const { name, grade, tagline, title, desc } = req.body;
-    if (!name || !grade || !tagline || !title || !desc) {
-      return res.status(400).json({ error: 'All fields are required' });
+    if (!name || !tagline || !title || !desc) {
+      return res.status(400).json({ error: 'Name, tagline, title and desc are required' });
     }
 
     const { data, error } = await supabase
       .from('accomplishments')
       .insert([{ 
         name, 
-        grade, 
+        grade: grade?.trim() ? grade : null, // make grade optional, store null if not given
         tagline, 
         title, 
         desc
