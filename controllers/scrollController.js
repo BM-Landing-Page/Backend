@@ -13,18 +13,19 @@ export async function getAll(req, res) {
 }
 
 // Protected - Create scroll
+// Protected - Create scroll
 export async function createScroll(req, res) {
   try {
     const { text, link } = req.body;
-    if (!text || !link ) {
-      return res.status(400).json({ error: 'Text, link  are required' });
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
     }
 
     const { data, error } = await supabase
       .from('scroller')
       .insert([{ 
         text, 
-        link
+        link: link ?? null  // if link is undefined, set it to null
       }]);
 
     if (error) throw error;
