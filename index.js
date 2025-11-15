@@ -12,6 +12,8 @@ import careerRoutes from './routes/careerRoutes.js';
 import popupRoutes from './routes/popupRoutes.js';
 import scrollRoutes from './routes/scrollRoutes.js';
 import achievementsRoutes from './routes/achievementsRoutes.js';
+import busRoutesRoutes from './routes/busRoutesRoutes.js';
+import busStopsRoutes from './routes/busStopsRoutes.js';
 
 dotenv.config();
 
@@ -30,6 +32,8 @@ app.use('/career', careerRoutes);
 app.use('/popup', popupRoutes);
 app.use('/scroll', scrollRoutes);
 app.use('/achievements', achievementsRoutes);
+app.use('/bus-routes', busRoutesRoutes);
+app.use('/bus-stops', busStopsRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
