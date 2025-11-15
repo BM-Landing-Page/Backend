@@ -126,7 +126,7 @@ export async function deleteUniversity(req, res) {
       .eq('university_id', id)
       .single();
     // Delete university
-    const { error } = await supabase
+    const { error: deleteError } = await supabase
       .from('universities')
       .delete()
       .eq('university_id', id);
@@ -137,7 +137,7 @@ export async function deleteUniversity(req, res) {
           }
           const updateData = { university_name, country };
           if (logo_url) updateData.logo_url = logo_url;
-          const { data, error } = await supabase
+          const { data, error: updateError } = await supabase
             .from('universities')
             .update(updateData)
             .eq('university_id', id)
