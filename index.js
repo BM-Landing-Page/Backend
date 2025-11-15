@@ -1,3 +1,10 @@
+import alumniRoutes from './routes/alumniRoutes.js';
+import universitiesRoutes from './routes/universitiesRoutes.js';
+import alumniUniversitiesRoutes from './routes/alumniUniversitiesRoutes.js';
+
+app.use('/alumni', alumniRoutes);
+app.use('/universities', universitiesRoutes);
+app.use('/alumni-universities', alumniUniversitiesRoutes);
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
