@@ -130,16 +130,11 @@ export async function deleteUniversity(req, res) {
       .from('universities')
       .delete()
       .eq('university_id', id);
-          const { university_name, country } = req.body;
-          let logo_url = null;
-          if (req.file) {
-            logo_url = await uploadImage(req.file);
-          }
-          const updateData = { university_name, country };
-          if (logo_url) updateData.logo_url = logo_url;
-          const { data, error: updateError } = await supabase
-            .from('universities')
-            .update(updateData)
-            .eq('university_id', id)
-            .select()
-            .single();
+    // Optionally delete logo from storage if needed
+    // if (university?.logo_url) await deleteImage(university.logo_url);
+    if (deleteError) throw deleteError;
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
