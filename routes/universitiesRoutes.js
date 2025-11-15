@@ -1,6 +1,6 @@
 import express from 'express';
 import { getAllUniversities, getUniversityById, createUniversity, updateUniversity, deleteUniversity, getUniversityOfferCounts } from '../controllers/universitiesController.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
+import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -10,8 +10,8 @@ router.get('/offer-counts', getUniversityOfferCounts);
 router.get('/:id', getUniversityById);
 
 // Protected
-router.post('/', authMiddleware, createUniversity);
-router.put('/:id', authMiddleware, updateUniversity);
-router.delete('/:id', authMiddleware, deleteUniversity);
+router.post('/', authenticateToken, createUniversity);
+router.put('/:id', authenticateToken, updateUniversity);
+router.delete('/:id', authenticateToken, deleteUniversity);
 
 export default router;
