@@ -66,18 +66,16 @@ export async function getUniversityById(req, res) {
 // Protected: Create university
 export async function createUniversity(req, res) {
   try {
-    const universityData = {
-      university_name: req.body.university_name,
-      country: req.body.country
-    };
-    if (req.file) {
-      universityData.logo_url = await uploadImage(req.file);
-    }
-    const { data, error } = await supabase
-      .from('universities')
-      .insert(universityData)
-      .select()
-      .single();
+      const { university_name, country } = req.body;
+      let logo_url = null;
+      if (req.file) {
+        logo_url = await uploadImage(req.file);
+      }
+      const { data, error } = await supabase
+        .from('universities')
+        .insert([{ university_name, country, logo_url }])
+        .select()
+        .single();
     if (error) throw error;
     res.status(201).json(data);
   } catch (error) {
@@ -132,13 +130,16 @@ export async function deleteUniversity(req, res) {
       .from('universities')
       .delete()
       .eq('university_id', id);
-    if (error) throw error;
-    // Delete logo if exists
-    if (university?.logo_url) {
-      await deleteImage(university.logo_url);
-    }
-    res.status(200).json({ message: 'University deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}
+          const { university_name, country } = req.body;
+          let logo_url = null;
+          if (req.file) {
+            logo_url = await uploadImage(req.file);
+          }
+          const updateData = { university_name, country };
+          if (logo_url) updateData.logo_url = logo_url;
+          const { data, error } = await supabase
+            .from('universities')
+            .update(updateData)
+            .eq('university_id', id)
+            .select()
+            .single();

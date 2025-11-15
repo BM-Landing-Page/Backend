@@ -52,7 +52,6 @@ export async function createAlumnus(req, res) {
       name: req.body.name,
       testimonial: req.body.testimonial,
       batch_id: req.body.batch_id,
-      current_university_id: req.body.current_university_id || null
     };
     if (req.file) {
       alumnusData.photo_url = await uploadImage(req.file);
@@ -89,7 +88,6 @@ export async function updateAlumnus(req, res) {
       name: req.body.name,
       testimonial: req.body.testimonial,
       batch_id: req.body.batch_id,
-      current_university_id: req.body.current_university_id || null
     };
     // Handle photo update
     if (req.file) {
