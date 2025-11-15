@@ -1,15 +1,10 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
 import alumniRoutes from './routes/alumniRoutes.js';
 import universitiesRoutes from './routes/universitiesRoutes.js';
 import alumniUniversitiesRoutes from './routes/alumniUniversitiesRoutes.js';
 import batchesRoutes from './routes/batchesRoutes.js';
-
-app.use('/alumni', alumniRoutes);
-app.use('/universities', universitiesRoutes);
-app.use('/alumni-universities', alumniUniversitiesRoutes);
-app.use('/batches', batchesRoutes);
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import dataRoutes from './routes/dataRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
@@ -30,6 +25,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use('/alumni', alumniRoutes);
+app.use('/universities', universitiesRoutes);
+app.use('/alumni-universities', alumniUniversitiesRoutes);
+app.use('/batches', batchesRoutes);
 app.use('/auth', authRoutes);
 app.use('/data', dataRoutes);
 app.use('/blog', blogRoutes);
