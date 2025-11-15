@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { authenticateToken } from '../middleware/authMiddleware.js';
+import * as batchController from '../controllers/batchController.js';
+
 const router = express.Router();
-const batchController = require('../controllers/batchController');
-const { authenticateToken } = require('../middleware/authMiddleware');
 
 // Public
 router.get('/', batchController.getAllBatches);
@@ -11,4 +12,4 @@ router.post('/', authenticateToken, batchController.createBatch);
 router.put('/:id', authenticateToken, batchController.updateBatch);
 router.delete('/:id', authenticateToken, batchController.deleteBatch);
 
-module.exports = router;
+export default router;
