@@ -17,14 +17,14 @@ export async function createBatch(req, res) {
 export async function updateBatch(req, res) {
   const { id } = req.params;
   const { batch_year, description } = req.body;
-  const { data, error } = await supabase.from('batches').update({ batch_year, description }).eq('id', id).select();
+  const { data, error } = await supabase.from('batches').update({ batch_year, description }).eq('batch_id', id).select();
   if (error) return res.status(500).json({ error: error.message });
   res.json(data[0]);
 }
 
 export async function deleteBatch(req, res) {
   const { id } = req.params;
-  const { error } = await supabase.from('batches').delete().eq('id', id);
+  const { error } = await supabase.from('batches').delete().eq('batch_id', id);
   if (error) return res.status(500).json({ error: error.message });
   res.json({ success: true });
 }

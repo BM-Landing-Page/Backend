@@ -130,9 +130,11 @@ export async function deleteUniversity(req, res) {
       .from('universities')
       .delete()
       .eq('university_id', id);
-    // Optionally delete logo from storage if needed
-    // if (university?.logo_url) await deleteImage(university.logo_url);
     if (deleteError) throw deleteError;
+    // Delete logo from storage if exists
+    if (university?.logo_url) {
+      await deleteImage(university.logo_url);
+    }
     res.status(200).json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
