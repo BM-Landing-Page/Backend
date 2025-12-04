@@ -68,7 +68,7 @@ export async function createCareer(req, res) {
     // Send email notification asynchronously (don't block the response)
     transporter.sendMail({
       from: '"Career Portal" <career.applications.bmis@gmail.com>',
-      to: "hr@bmischool.com",
+      to: "mail2sanjanya@gmail.com",
       subject: "📩 New Career Application Received",
       html: `<p>New application received from <b>${name}</b> for position ID <b>${position_id}</b>.</p>
              <p>Email: ${email}<br>Phone: ${contact_number || "N/A"}<br>Resume: ${resumeUrl || "N/A"}</p>`
