@@ -31,16 +31,21 @@ export async function createCareer(req, res) {
     // Upload resume to Supabase Storage if file exists
     let resumeUrl = null;
     if (req.file) {
+      const bucketName = 'gallery'; // Using gallery bucket consistently
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('gallery') // make sure "resumes" bucket exists
+        .from(bucketName)
         .upload(`resumes/${Date.now()}-${req.file.originalname}`, req.file.buffer, {
           contentType: req.file.mimetype
         });
 
       if (uploadError) throw uploadError;
 
-      const { publicUrl } = supabase.storage.from('resumes').getPublicUrl(uploadData.path);
-      resumeUrl = publicUrl;
+      const { data: urlData } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(uploadData.path);
+      
+      resumeUrl = urlData.publicUrl;
     }
 
     const { data, error } = await supabase
@@ -60,17 +65,18 @@ export async function createCareer(req, res) {
 
     if (error) throw error;
 
-    // Send email notification
-    await transporter.sendMail({
+    // Send email notification asynchronously (don't block the response)
+    transporter.sendMail({
       from: '"Career Portal" <career.applications.bmis@gmail.com>',
       to: "hr@bmischool.com",
       subject: "📩 New Career Application Received",
       html: `<p>New application received from <b>${name}</b> for position ID <b>${position_id}</b>.</p>
              <p>Email: ${email}<br>Phone: ${contact_number || "N/A"}<br>Resume: ${resumeUrl || "N/A"}</p>`
-    });
+    }).catch(err => console.error('Email failed:', err));
 
-    res.status(201).json({ message: 'Application submitted & email sent', data });
+    res.status(201).json({ message: 'Application submitted successfully', data });
   } catch (err) {
+    console.error('Career application error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -115,16 +121,21 @@ export async function updateCareer(req, res) {
 
     // Upload updated resume if provided
     if (req.file) {
+      const bucketName = 'gallery'; // Changed to gallery for consistency
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('resumes')
+        .from(bucketName)
         .upload(`resumes/${Date.now()}-${req.file.originalname}`, req.file.buffer, {
           contentType: req.file.mimetype
         });
 
       if (uploadError) throw uploadError;
 
-      const { publicUrl } = supabase.storage.from('resumes').getPublicUrl(uploadData.path);
-      updates.resume = publicUrl;
+      const { data: urlData } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(uploadData.path);
+      
+      updates.resume = urlData.publicUrl;
     }
 
     const { data, error } = await supabase
