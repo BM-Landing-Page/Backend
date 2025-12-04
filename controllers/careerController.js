@@ -32,7 +32,7 @@ export async function createCareer(req, res) {
     let resumeUrl = null;
     if (req.file) {
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('resumes') // make sure "resumes" bucket exists
+        .from('gallery') // make sure "resumes" bucket exists
         .upload(`resumes/${Date.now()}-${req.file.originalname}`, req.file.buffer, {
           contentType: req.file.mimetype
         });
