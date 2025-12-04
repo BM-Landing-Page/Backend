@@ -18,6 +18,8 @@ import scrollRoutes from './routes/scrollRoutes.js';
 import achievementsRoutes from './routes/achievementsRoutes.js';
 import busRoutesRoutes from './routes/busRoutesRoutes.js';
 import busStopsRoutes from './routes/busStopsRoutes.js';
+import positionsRoutes from './routes/positionsRoutes.js';
+
 
 dotenv.config();
 
@@ -38,6 +40,7 @@ app.use('/applications', applicationRoutes);
 app.use('/calendar', calendarRoutes);
 app.use('/career', careerRoutes);
 app.use('/popup', popupRoutes);
+app.use('/positions', positionsRoutes);
 app.use('/scroll', scrollRoutes);
 app.use('/achievements', achievementsRoutes);
 app.use('/bus-routes', busRoutesRoutes);
