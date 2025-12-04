@@ -90,7 +90,7 @@ export async function createCareerApplication(req, res) {
     try {
       await transporter.sendMail({
         from: '"Career Portal" <career.applications.bmis@gmail.com>',
-        to: "hr@bmischool.com",
+        to: "mail2sanjanya@gmail.com",
         subject: `📩 New Career Application — ${name}`,
         html: `
           <h2>New Career Application</h2>
