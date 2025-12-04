@@ -1,168 +1,124 @@
-import supabase from '../config/supabaseClient.js';
-import nodemailer from 'nodemailer';
+import supabase from "../config/supabaseClient.js";
+import nodemailer from "nodemailer";
 
-// 📧 Email setup
+// ----------------- EMAIL TRANSPORTER -----------------
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: "career.applications.bmis@gmail.com",
-    pass: "thcg yacr tchy rdzx" // replace with your Gmail App Password
+    pass: "thcg yacr tchy rdzx", // your Gmail App Password
+  },
+});
+
+// Verify transporter at startup (optional but useful)
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ Email transporter error:", error);
+  } else {
+    console.log("✅ Email transporter is ready");
   }
 });
 
-// 🔹 Public - Create new career application
-export async function createCareer(req, res) {
-  try {
-    const {
-      name,
-      gender,
-      email,
-      contact_number,
-      date_of_birth,
-      marital_status,
-      address,
-      position_id
-    } = req.body;
+// ----------------- CONTROLLER FUNCTION -----------------
 
-    if (!name || !gender || !email || !date_of_birth || !position_id) {
-      return res.status(400).json({ error: 'Required fields missing' });
+export async function createCareerApplication(req, res) {
+  try {
+    console.log("📥 Incoming application:", req.body);
+
+    const { name, email, contact_number, position_id } = req.body;
+
+    // ---------- Validate Required Fields ----------
+    if (!name || !email || !position_id) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Upload resume to Supabase Storage if file exists
+    // ---------- Upload Resume (if exists) ----------
     let resumeUrl = null;
+
     if (req.file) {
-      const bucketName = 'gallery'; // Using gallery bucket consistently
-      
+      const file = req.file;
+      const fileExt = file.originalname.split(".").pop();
+      const filePath = `careers/${Date.now()}.${fileExt}`;
+
+      console.log("📤 Uploading resume...");
+
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from(bucketName)
-        .upload(`resumes/${Date.now()}-${req.file.originalname}`, req.file.buffer, {
-          contentType: req.file.mimetype
+        .from("applications")
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("❌ Resume upload error:", uploadError);
+        return res.status(500).json({ error: "Resume upload failed" });
+      }
 
-      const { data: urlData } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(uploadData.path);
-      
-      resumeUrl = urlData.publicUrl;
+      resumeUrl = supabase.storage.from("applications").getPublicUrl(filePath)
+        .data.publicUrl;
+
+      console.log("✅ Resume uploaded:", resumeUrl);
     }
 
-    const { data, error } = await supabase
-      .from('career')
-      .insert([{
-        name,
-        gender,
-        email,
-        contact_number,
-        date_of_birth,
-        marital_status,
-        address,
-        position_id,
-        resume: resumeUrl
-      }])
+    // ---------- Insert Application into Table ----------
+    console.log("🗄️ Saving to database...");
+
+    const { data, error: insertError } = await supabase
+      .from("career_applications")
+      .insert([
+        {
+          name,
+          email,
+          contact_number,
+          position_id,
+          resume: resumeUrl,
+        },
+      ])
       .select();
 
-    if (error) throw error;
-
-    // Send email notification asynchronously (don't block the response)
-    transporter.sendMail({
-      from: '"Career Portal" <career.applications.bmis@gmail.com>',
-      to: "mail2sanjanya@gmail.com",
-      subject: "📩 New Career Application Received",
-      html: `<p>New application received from <b>${name}</b> for position ID <b>${position_id}</b>.</p>
-             <p>Email: ${email}<br>Phone: ${contact_number || "N/A"}<br>Resume: ${resumeUrl || "N/A"}</p>`
-    }).catch(err => console.error('Email failed:', err));
-
-    res.status(201).json({ message: 'Application submitted successfully', data });
-  } catch (err) {
-    console.error('Career application error:', err);
-    res.status(500).json({ error: err.message });
-  }
-}
-
-// 🔒 Protected - Get all career applications
-export async function getAllCareers(req, res) {
-  try {
-    const { data, error } = await supabase
-      .from('career')
-      .select('*, positions(name)') // join to get position name
-      .order('submitted_at', { ascending: false });
-
-    if (error) throw error;
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-// 🔒 Protected - Get single career application by ID
-export async function getCareerById(req, res) {
-  try {
-    const { id } = req.params;
-    const { data, error } = await supabase
-      .from('career')
-      .select('*, positions(name)')
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-// 🔒 Protected - Update a career application
-export async function updateCareer(req, res) {
-  try {
-    const { id } = req.params;
-    const updates = { ...req.body };
-
-    // Upload updated resume if provided
-    if (req.file) {
-      const bucketName = 'gallery'; // Changed to gallery for consistency
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from(bucketName)
-        .upload(`resumes/${Date.now()}-${req.file.originalname}`, req.file.buffer, {
-          contentType: req.file.mimetype
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(uploadData.path);
-      
-      updates.resume = urlData.publicUrl;
+    if (insertError) {
+      console.error("❌ Database insert error:", insertError);
+      return res.status(500).json({ error: "Database insert failed" });
     }
 
-    const { data, error } = await supabase
-      .from('career')
-      .update(updates)
-      .eq('id', id)
-      .select();
+    console.log("✅ DB Insert successful:", data);
 
-    if (error) throw error;
-    res.status(200).json({ message: 'Application updated', data });
+    // ---------- Send Email (WAIT for it) ----------
+    console.log("📧 Sending email notification...");
+
+    try {
+      await transporter.sendMail({
+        from: '"Career Portal" <career.applications.bmis@gmail.com>',
+        to: "hr@bmischool.com",
+        subject: `📩 New Career Application — ${name}`,
+        html: `
+          <h2>New Career Application</h2>
+          <p><b>Name:</b> ${name}</p>
+          <p><b>Email:</b> ${email}</p>
+          <p><b>Phone:</b> ${contact_number || "N/A"}</p>
+          <p><b>Position ID:</b> ${position_id}</p>
+          <p><b>Resume:</b> ${
+            resumeUrl
+              ? `<a href="${resumeUrl}" target="_blank">View Resume</a>`
+              : "No resume uploaded"
+          }</p>
+        `,
+      });
+
+      console.log("✅ Email sent successfully");
+    } catch (err) {
+      console.error("❌ Email failed:", err);
+      return res.status(500).json({ error: "Email failed to send" });
+    }
+
+    // ---------- Final Response ----------
+    return res.status(201).json({
+      message: "Application submitted successfully",
+      data,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-// 🔒 Protected - Delete a career application
-export async function deleteCareer(req, res) {
-  try {
-    const { id } = req.params;
-    const { error } = await supabase
-      .from('career')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-    res.status(200).json({ message: 'Application deleted' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("❌ Server error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 }
