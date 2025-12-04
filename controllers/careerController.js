@@ -10,7 +10,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Verify transporter
 transporter.verify((error, success) => {
   if (error) {
     console.error("❌ Email transporter error:", error);
@@ -28,7 +27,8 @@ export async function createCareerApplication(req, res) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Upload resume if provided
+    const positionIdInt = parseInt(position_id, 10);
+
     let resumeUrl = null;
     if (req.file) {
       const file = req.file;
@@ -36,7 +36,7 @@ export async function createCareerApplication(req, res) {
       const filePath = `careers/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("gallery") // <-- bucket name
+        .from("gallery")
         .upload(filePath, file.buffer, { contentType: file.mimetype });
 
       if (uploadError) {
@@ -56,15 +56,17 @@ export async function createCareerApplication(req, res) {
       resumeUrl = publicData.publicUrl;
     }
 
-    // Insert into DB
+    // --- INSERT INTO CORRECT TABLE NAME ---
     const { data, error: insertError } = await supabase
-      .from("career_applications")
-      .insert([{ name, email, contact_number, position_id, resume: resumeUrl }])
+      .from("career") // <-- table name updated here
+      .insert([{ name, email, contact_number, position_id: positionIdInt, resume: resumeUrl }])
       .select();
 
-    if (insertError) return res.status(500).json({ error: "Database insert failed" });
+    if (insertError) {
+      console.error("❌ Database insert failed:", insertError);
+      return res.status(500).json({ error: insertError.message });
+    }
 
-    // Send email notification
     await transporter.sendMail({
       from: '"Career Portal" <career.applications.bmis@gmail.com>',
       to: "mail2sanjanya@gmail.com",
@@ -74,7 +76,7 @@ export async function createCareerApplication(req, res) {
         <p><b>Name:</b> ${name}</p>
         <p><b>Email:</b> ${email}</p>
         <p><b>Phone:</b> ${contact_number || "N/A"}</p>
-        <p><b>Position ID:</b> ${position_id}</p>
+        <p><b>Position ID:</b> ${positionIdInt}</p>
         <p><b>Resume:</b> ${
           resumeUrl ? `<a href="${resumeUrl}" target="_blank">View Resume</a>` : "No resume uploaded"
         }</p>
@@ -84,7 +86,7 @@ export async function createCareerApplication(req, res) {
     return res.status(201).json({ message: "Application submitted successfully", data });
   } catch (err) {
     console.error("❌ Server error:", err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: err.message });
   }
 }
 
@@ -92,11 +94,11 @@ export async function createCareerApplication(req, res) {
 export async function getAllCareerApplications(req, res) {
   try {
     const { data, error } = await supabase
-      .from("career_applications")
+      .from("career") // updated table
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) return res.status(500).json({ error: "Failed to fetch applications" });
+    if (error) return res.status(500).json({ error: error.message });
 
     res.status(200).json(data);
   } catch (err) {
@@ -110,7 +112,7 @@ export async function getCareerApplicationById(req, res) {
     const { id } = req.params;
 
     const { data, error } = await supabase
-      .from("career_applications")
+      .from("career") // updated table
       .select("*")
       .eq("id", id)
       .single();
@@ -129,7 +131,10 @@ export async function updateCareerApplication(req, res) {
     const { id } = req.params;
     const updates = { ...req.body };
 
-    // Upload new resume if provided
+    if (updates.position_id) {
+      updates.position_id = parseInt(updates.position_id, 10);
+    }
+
     if (req.file) {
       const file = req.file;
       const fileExt = file.originalname.split(".").pop();
@@ -145,20 +150,18 @@ export async function updateCareerApplication(req, res) {
         .from("gallery")
         .getPublicUrl(filePath);
 
-      if (publicError || !publicData) {
-        return res.status(500).json({ error: "Failed to get resume URL" });
-      }
+      if (publicError || !publicData) return res.status(500).json({ error: "Failed to get resume URL" });
 
       updates.resume = publicData.publicUrl;
     }
 
     const { data, error } = await supabase
-      .from("career_applications")
+      .from("career") // updated table
       .update(updates)
       .eq("id", id)
       .select();
 
-    if (error) return res.status(500).json({ error: "Failed to update application" });
+    if (error) return res.status(500).json({ error: error.message });
 
     res.status(200).json({ message: "Application updated", data });
   } catch (err) {
@@ -171,9 +174,9 @@ export async function deleteCareerApplication(req, res) {
   try {
     const { id } = req.params;
 
-    const { error } = await supabase.from("career_applications").delete().eq("id", id);
+    const { error } = await supabase.from("career").delete().eq("id", id);
 
-    if (error) return res.status(500).json({ error: "Failed to delete application" });
+    if (error) return res.status(500).json({ error: error.message });
 
     res.status(200).json({ message: "Application deleted successfully" });
   } catch (err) {
