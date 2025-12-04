@@ -25,8 +25,6 @@ export async function createCareerApplication(req, res) {
       return res.status(400).json({ error: "Missing required fields" })
     }
 
-    const positionIdInt = Number.parseInt(position_id, 10)
-
     let resumeUrl = null
     if (req.file) {
       const file = req.file
@@ -59,13 +57,13 @@ export async function createCareerApplication(req, res) {
           name,
           email,
           contact_number,
-          position_id: positionIdInt,
+          position_id, // Use UUID string directly without parsing to integer
           gender,
           date_of_birth,
           marital_status: marital_status || null,
           address,
           resume: resumeUrl,
-          submitted_at: new Date().toISOString(), // Automatically set timestamp
+          submitted_at: new Date().toISOString(),
         },
       ])
       .select()
@@ -88,7 +86,7 @@ export async function createCareerApplication(req, res) {
         <p><b>Date of Birth:</b> ${date_of_birth}</p>
         <p><b>Marital Status:</b> ${marital_status || "N/A"}</p>
         <p><b>Address:</b> ${address}</p>
-        <p><b>Position ID:</b> ${positionIdInt}</p>
+        <p><b>Position ID:</b> ${position_id}</p>
         <p><b>Resume:</b> ${
           resumeUrl ? `<a href="${resumeUrl}" target="_blank">View Resume</a>` : "No resume uploaded"
         }</p>
@@ -134,7 +132,8 @@ export async function updateCareerApplication(req, res) {
     const updates = { ...req.body }
 
     if (updates.position_id) {
-      updates.position_id = Number.parseInt(updates.position_id, 10)
+      // Keep position_id as UUID string
+      // Updates keep the UUID format for consistency with database schema
     }
 
     if (req.file) {
