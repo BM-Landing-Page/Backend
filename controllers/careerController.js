@@ -36,14 +36,27 @@ export async function createCareerApplication(req, res) {
       const filePath = `careers/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("applications")
+        .from("gallery") // <-- bucket name
         .upload(filePath, file.buffer, { contentType: file.mimetype });
 
-      if (uploadError) return res.status(500).json({ error: "Resume upload failed" });
+      if (uploadError) {
+        console.error("❌ Resume upload failed:", uploadError);
+        return res.status(500).json({ error: "Resume upload failed" });
+      }
 
-      resumeUrl = supabase.storage.from("applications").getPublicUrl(filePath).data.publicUrl;
+      const { data: publicData, error: publicError } = supabase.storage
+        .from("gallery")
+        .getPublicUrl(filePath);
+
+      if (publicError || !publicData) {
+        console.error("❌ Failed to get public URL:", publicError);
+        return res.status(500).json({ error: "Failed to get resume URL" });
+      }
+
+      resumeUrl = publicData.publicUrl;
     }
 
+    // Insert into DB
     const { data, error: insertError } = await supabase
       .from("career_applications")
       .insert([{ name, email, contact_number, position_id, resume: resumeUrl }])
@@ -62,8 +75,10 @@ export async function createCareerApplication(req, res) {
         <p><b>Email:</b> ${email}</p>
         <p><b>Phone:</b> ${contact_number || "N/A"}</p>
         <p><b>Position ID:</b> ${position_id}</p>
-        <p><b>Resume:</b>${resumeUrl ? `<a href="${resumeUrl}" target="_blank">View Resume</a>` : " No resume uploaded"}</p>
-      `
+        <p><b>Resume:</b> ${
+          resumeUrl ? `<a href="${resumeUrl}" target="_blank">View Resume</a>` : "No resume uploaded"
+        }</p>
+      `,
     });
 
     return res.status(201).json({ message: "Application submitted successfully", data });
@@ -100,7 +115,7 @@ export async function getCareerApplicationById(req, res) {
       .eq("id", id)
       .single();
 
-    if (error) return res.status(404).json({ error: "Application not found" });
+    if (error || !data) return res.status(404).json({ error: "Application not found" });
 
     res.status(200).json(data);
   } catch (err) {
@@ -121,12 +136,20 @@ export async function updateCareerApplication(req, res) {
       const filePath = `careers/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("applications")
+        .from("gallery")
         .upload(filePath, file.buffer, { contentType: file.mimetype, upsert: true });
 
       if (uploadError) return res.status(500).json({ error: "Resume upload failed" });
 
-      updates.resume = supabase.storage.from("applications").getPublicUrl(filePath).data.publicUrl;
+      const { data: publicData, error: publicError } = supabase.storage
+        .from("gallery")
+        .getPublicUrl(filePath);
+
+      if (publicError || !publicData) {
+        return res.status(500).json({ error: "Failed to get resume URL" });
+      }
+
+      updates.resume = publicData.publicUrl;
     }
 
     const { data, error } = await supabase
@@ -148,10 +171,7 @@ export async function deleteCareerApplication(req, res) {
   try {
     const { id } = req.params;
 
-    const { error } = await supabase
-      .from("career_applications")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("career_applications").delete().eq("id", id);
 
     if (error) return res.status(500).json({ error: "Failed to delete application" });
 
