@@ -18,6 +18,9 @@ transporter.verify((error, success) => {
 })
 
 export async function createCareerApplication(req, res) {
+  console.log("🔥 BODY RECEIVED:", req.body)
+  console.log("📄 FILE RECEIVED:", req.file)
+
   try {
     const { name, email, contact_number, position_id, gender, date_of_birth, marital_status, address } = req.body
 
@@ -40,7 +43,8 @@ export async function createCareerApplication(req, res) {
         return res.status(500).json({ error: "Resume upload failed" })
       }
 
-      const { data: publicData, error: publicError } = supabase.storage.from("gallery").getPublicUrl(filePath)
+      const { data: publicData, error: publicError } =
+        supabase.storage.from("gallery").getPublicUrl(filePath)
 
       if (publicError || !publicData) {
         console.error("❌ Failed to get public URL:", publicError)
@@ -57,7 +61,7 @@ export async function createCareerApplication(req, res) {
           name,
           email,
           contact_number,
-          position_id, // Use UUID string directly without parsing to integer
+          position_id,
           gender,
           date_of_birth,
           marital_status: marital_status || null,
@@ -102,7 +106,10 @@ export async function createCareerApplication(req, res) {
 
 export async function getAllCareerApplications(req, res) {
   try {
-    const { data, error } = await supabase.from("career").select("*").order("submitted_at", { ascending: false })
+    const { data, error } = await supabase
+      .from("career")
+      .select("*")
+      .order("submitted_at", { ascending: false })
 
     if (error) return res.status(500).json({ error: error.message })
 
@@ -127,14 +134,12 @@ export async function getCareerApplicationById(req, res) {
 }
 
 export async function updateCareerApplication(req, res) {
+  console.log("🔥 BODY RECEIVED (UPDATE):", req.body)
+  console.log("📄 FILE RECEIVED (UPDATE):", req.file)
+
   try {
     const { id } = req.params
     const updates = { ...req.body }
-
-    if (updates.position_id) {
-      // Keep position_id as UUID string
-      // Updates keep the UUID format for consistency with database schema
-    }
 
     if (req.file) {
       const file = req.file
@@ -143,18 +148,26 @@ export async function updateCareerApplication(req, res) {
 
       const { error: uploadError } = await supabase.storage
         .from("gallery")
-        .upload(filePath, file.buffer, { contentType: file.mimetype, upsert: true })
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: true,
+        })
 
       if (uploadError) return res.status(500).json({ error: "Resume upload failed" })
 
-      const { data: publicData, error: publicError } = supabase.storage.from("gallery").getPublicUrl(filePath)
+      const { data: publicData, error: publicError } =
+        supabase.storage.from("gallery").getPublicUrl(filePath)
 
       if (publicError || !publicData) return res.status(500).json({ error: "Failed to get resume URL" })
 
       updates.resume = publicData.publicUrl
     }
 
-    const { data, error } = await supabase.from("career").update(updates).eq("id", id).select()
+    const { data, error } = await supabase
+      .from("career")
+      .update(updates)
+      .eq("id", id)
+      .select()
 
     if (error) return res.status(500).json({ error: error.message })
 
