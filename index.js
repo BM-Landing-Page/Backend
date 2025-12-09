@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
 import alumniRoutes from './routes/alumniRoutes.js';
 import universitiesRoutes from './routes/universitiesRoutes.js';
 import alumniUniversitiesRoutes from './routes/alumniUniversitiesRoutes.js';
@@ -12,7 +13,7 @@ import feedbackRoutes from './routes/feedbackRoutes.js';
 import teamRoutes from './routes/teamRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
 import calendarRoutes from './routes/calendarRoutes.js';
-import careerRoutes from './routes/careerRoutes.js'; 
+import careerRoutes from './routes/careerRoutes.js';
 import popupRoutes from './routes/popupRoutes.js';
 import scrollRoutes from './routes/scrollRoutes.js';
 import achievementsRoutes from './routes/achievementsRoutes.js';
@@ -20,13 +21,27 @@ import busRoutesRoutes from './routes/busRoutesRoutes.js';
 import busStopsRoutes from './routes/busStopsRoutes.js';
 import positionsRoutes from './routes/positionsRoutes.js';
 
-
 dotenv.config();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
+// -------------------------------
+// 🔥 CORS (fixed)
+// -------------------------------
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+}));
+
+// -------------------------------
+// 🔥 BODY PARSERS (critical fix)
+// -------------------------------
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));  // ← REQUIRED FOR FORM-DATA
+
+// -------------------------------
+// 🔥 ROUTES
+// -------------------------------
 app.use('/alumni', alumniRoutes);
 app.use('/universities', universitiesRoutes);
 app.use('/alumni-universities', alumniUniversitiesRoutes);
@@ -38,7 +53,7 @@ app.use('/feedback', feedbackRoutes);
 app.use('/team', teamRoutes);
 app.use('/applications', applicationRoutes);
 app.use('/calendar', calendarRoutes);
-app.use('/career', careerRoutes);
+app.use('/career', careerRoutes); // ← Your form submission route
 app.use('/popup', popupRoutes);
 app.use('/positions', positionsRoutes);
 app.use('/scroll', scrollRoutes);
@@ -46,5 +61,8 @@ app.use('/achievements', achievementsRoutes);
 app.use('/bus-routes', busRoutesRoutes);
 app.use('/bus-stops', busStopsRoutes);
 
+// -------------------------------
+// 🔥 SERVER START
+// -------------------------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
